@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html lang="en" ng-app="app">
+<head>
+    <meta charset="UTF-8">
+    <title>兼容性测试</title>
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css" />
+    <script type="text/javascript" src="js/lib/jquery-1.10.2.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/lib/angular.min.js"></script>
+    <script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.9.0.js"></script>
+    <script type="text/javascript" src="js/diff-demo.js"></script>
+    <script type="text/ng-template" id="dialog.html">
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>Modal header</h3>
+  </div>
+  <div class="modal-body">
+    <p>改变button的文字：(立刻生效)<input type="text" ng-model="tmp.text" /></p>
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" ng-click="cancelDialog()">Close</a>
+    <a href="#" class="btn btn-primary">Save changes</a>
+</div>
+    </script>
+    <script type="text/ng-template" id="directiveDialog.html">
+<div class="modal hide fade">
+</div> 
+    </script>
+</head>
+<body ng-controller="dialogCtrl">
+<div id="J_msg" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>Modal header</h3>
+  </div>
+  <div class="modal-body">
+    <p>One fine body…</p>
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn J_close">Close</a>
+    <a href="#" class="btn btn-primary">Save changes</a>
+  </div>
+</div>
+
+<my-dialog>
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>Modal header</h3>
+  </div>
+  <div class="modal-body">
+    <p>改变button的文字：(立刻生效)<input type="text" ng-model="tmp.text" /></p>
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" ng-click="cancelDialog()">Close</a>
+    <a href="#" class="btn btn-primary">Save changes</a>
+</div>
+</my-dialog>
+
+
+<div style="margin: 200px;">
+    <button class="btn btn-primary J_open">使用bootstrap打开</button>
+    <button class="btn btn-primary" ng-click="openDialog()" ng-bind="util.text"></button>
+    <button class="btn btn-primary" ng-click="openBootDialog()">在angular中使用boot打开</button>
+    <button class="btn btn-primary" ng-click="openBootDialog()">使用directive打开</button>
+</div>
+</body>
+</html>

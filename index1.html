@@ -1,0 +1,106 @@
+<!DOCTYPE HTML>
+<html lang="en" ng-app="app">
+<head>
+    <meta charset="UTF-8">
+    <title>ANGULAR DRAG</title>
+    <script type="text/javascript" src="js/lib/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="js/lib/angular.min.js"></script>
+    <script type="text/javascript" src="js/lib/jquery-ui-1.10.3.custom.min.js"></script>
+    <script type="text/javascript" src="js/lib/svg.js"></script>
+    <script type="text/javascript" src="js/lib/svg.draggable.js"></script>
+    <script type="text/javascript" src="http://local.tmall.net/nb/public/libs/svgjs/svg.draggable.js"></script>
+    <script type="text/javascript" src="js/registerCenter.js"></script>
+    <script type="text/javascript" src="js/directives/dragable.js"></script>
+    <script type="text/javascript" src="js/controllers/indexCtrl.js"></script>
+</head>
+<style type="text/css">
+.phoneContainer {
+    width: 300px;
+    min-height: 100px;
+    position: absolute;
+    left: 50%;
+    margin-left: -250px;
+    border: 1px red solid;
+    top: -100%;
+    -webkit-transition: all 1s;
+}
+.phoneContainer2 {
+    width: 300px;
+    min-height: 100px;
+    position: absolute;
+    right: 0px;
+    margin-left: -250px;
+    border: 1px red solid;
+    -webkit-transition: all 1s;
+    
+}
+.phoneContainer .dragable {
+    height: 100px;
+    border: 1px black solid;
+    margin: 10px;
+    cursor: move; 
+}
+.phoneContainer .helper {
+    height: 100px;
+    border: 1px black solid;
+    margin: 10px;
+    background-color: #0F0;
+}
+.phoneContainer2 .dragable {
+    height: 100px;
+    border: 1px black solid;
+    margin: 10px;
+    cursor: move; 
+}
+.phoneContainer2 .helper {
+    height: 100px;
+    border: 1px black solid;
+    margin: 10px;
+    background-color: #0F0;
+}
+.in {
+    top: 10%;
+}
+.operation {
+    width: 200px;
+    position: relative;
+    left: -200px;
+    min-height: 200px;
+    padding: 20px;
+    -webkit-transition: all 1s;
+}
+.operation .helper {
+    height: 100px;
+    border: 1px black solid;
+    margin: 10px;
+    background-color: #0F0;
+}
+.left-in {
+    left: 0px;
+}
+.operation div {
+    height: 100px;
+    border: 1px black solid;
+    margin: 20px 0px;
+    
+}
+
+</style>
+<body ng-controller="indexCtrl">
+ <div class="operation">
+     <div class="background">背景图{{text}}</div>
+    <div class="text" id="ctrl" dragable>文字块</div>
+    <div class="focusBg">焦点图</div>
+    <svg xmlns="http://www.w3.org/2000/svg" width="200px" height="200px" version="1.1" id="svg">
+        <!--<rect id="rectTest" width="100" height="50" fill="yellow" x="100" y="50"></rect>-->
+    </svg>
+ </div>
+ <div class="phoneContainer">
+    <div id="1" class="dragable">the first</div>
+    <div id="2" class="dragable">the second</div>
+    <div id="3" class="dragable">the third</div>
+    <div id="4" class="dragable">the fourth</div>
+ </div> 
+ <div class="phoneContainer" style="left:80%"></div>
+</body>
+</html>
