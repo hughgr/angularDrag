@@ -1,17 +1,3 @@
-controllers.controller('indexCtrl', ['$scope', '$timeout', function ($scope, $timeout) {
-    $scope.text = 'this is the text'; 
-    setTimeout(function () {
-        /*$scope.$apply(function () {
-                $scope.text = 'refresh!!!';
-        })*/
-        /*angular.element('.operation').append(angular.element('<span style="color:red">1111</span>'))*/
-        $scope.text = 'rrefresh at will!!!refresh at will!!!refresh at will!!!refresh at will!!!efresh at will!!!refresh at will!!!refresh at will!!!refresh at will!!!' 
-        $scope.$apply();
-    }, 2000)
-    $scope.showAlert = function () {
-        alert(1)
-    }
-    
 
 /*
  * Licensed under the MIT license:
@@ -85,7 +71,7 @@ Raphael.fn.freeTransform = function(subject, options, callback) {
     }
 
     if ( !ft.opts.scale ) {
-        ft.opts.keepRatio = false;
+        ft.opts.keepRatio = true;
     }
 
     if ( ft.opts.keepRatio ) {
@@ -490,14 +476,9 @@ Raphael.fn.freeTransform = function(subject, options, callback) {
 var ws = Raphael('workspace');
 
 
-for(var i = 1; i < 10; i++) { 
+for(var i = 0; i < 10; i++) { 
     
-    /*var img = ws.image('http://www.alconeco.com/var/alcone/storage/images/products/character/face_altering_makeup/woochie_cat_face/28087-2-eng-US/woochie_cat_face_productfull.jpg', 10 + (i * 10), 10 + (i * 10), 100, 100);*/
-    img = ws.ellipse(i*10,i*10,50,100 )
+    var img = ws.image('http://www.alconeco.com/var/alcone/storage/images/products/character/face_altering_makeup/woochie_cat_face/28087-2-eng-US/woochie_cat_face_productfull.jpg', 10 + (i * 10), 10 + (i * 10), 100, 100);
 
-    ws.freeTransform(img, {keepRatio: false, showBBox: true});
+    ws.freeTransform(img, {keepRatio: true, showBBox: true});
 }
-
-
-
-}])

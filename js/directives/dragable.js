@@ -188,6 +188,17 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
             $scope.scale = function () {
                 var tmp = ellipse.scale();
             }*/
+    var cir = paper.ellipse(40,40,20, 40).attr({
+            "fill": "green",
+            "stroke": "red" // border color of the rectangle 
+            });
+    window.newcir = cir.clone().attr({ "fill": "yellow" }).transform("t100,100R30S1.5"); 
+    var bbox = newcir.getBBox();
+    var bboxOld = newcir.getBBox(true); //我们通过获得的包围盒来绘制包裹圆的矩形 
+    var helper = paper.rect(bboxOld.x, bboxOld.y, bboxOld.width, bboxOld.height).attr({ "stroke": "black","stroke-width":3 });
+    helper.attr({transform: newcir.matrix.toTransformString()})
+   
+    paper.rect(bboxOld.x, bboxOld.y, bboxOld.width, bboxOld.height).attr({ "stroke": "purple" })
         }] 
         
     }
