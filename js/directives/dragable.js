@@ -226,7 +226,7 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
 		attrs: {
 			x: bbox.x,
 			y: bbox.y,
-			size: { x: bbox.width, y: bbox.height },
+			size: { width: bbox.width, height: bbox.height },
 			center: { x: bbox.x + bbox.width  / 2, y: bbox.y + bbox.height / 2 },
 			rotate: 0,
 			scale: { x: 1, y: 1 },
@@ -238,7 +238,7 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
         opts: {
 			attrs: { fill: '#F00', stroke: '#000' }, //helper point的颜色
             size: 5,
-            distance: 1.3
+            distance: 1.6
         },
         handles: {
             bbox: [],
@@ -261,35 +261,19 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
         nb.handles.line = paper.path([ 'M', nb.attrs.center.x, nb.attrs.center.y ])
     			        .attr({
                            stroke: nb.opts.attrs.stroke,
-                           'stroke-dasharray': '- ',
-                           opacity: .5,
+                           'stroke-dasharray': '- '
 				         });
         nb.handles.rPoint = paper
 				.circle(nb.attrs.center.x, nb.attrs.center.y, nb.opts.size)
 				.attr(nb.opts.attrs);
-        var corners = getBBox();
-        var rad = nb.attrs.rotate * Math.PI / 180;
-        var radius = nb.attrs.size.x / 2 * nb.attrs.scale.x; 
-        var cx = nb.attrs.center.x + nb.attrs.translate.x + radius * nb.opts.distance * Math.cos(rad);
-        var cy = nb.attrs.center.y + nb.attrs.translate.y + radius * nb.opts.distance * Math.sin(rad);
-        nb.handles.rPoint.attr({
-            cx: cx,
-            cy: cy
-        })
-        nb.handles.line.toFront().attr({
-            path: [ [ 'M', nb.attrs.center.x + nb.attrs.translate.x, nb.attrs.center.y + nb.attrs.translate.y ], [ 'L', nb.handles.rPoint.attrs.cx, nb.handles.rPoint.attrs.cy ] ]
-        });
 
-        
-
-        var helperBBox = paper
+        nb.helperBBox = paper
 				.path('')
 				.attr({
 					stroke: nb.opts.attrs.stroke,
 					'stroke-dasharray': '- ',
 					opacity: .5
-					})
-				;
+					});
 
             nb.handles.bbox = [];
         for (var i = 0; i < 8; i++) {
@@ -298,7 +282,7 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
             handle.isCorner = i < 4; //是否是4个角，scale以这个为圆心
 
             handle.element = paper
-            .rect(nb.attrs.center.x, nb.attrs.center.y, nb.opts.size, nb.opts.size)
+            .rect(nb.attrs.center.x, nb.attrs.center.y, nb.opts.size * 2, nb.opts.size * 2)
             .attr(nb.opts.attrs) ;
 
             nb.handles.bbox[i] = handle;
@@ -308,7 +292,63 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
 				.circle(nb.attrs.center.x, nb.attrs.center.y, nb.opts.size.center)
 				.attr(nb.opts.attrs)
 				;*/
-        
+        nb.updateHelper(); 
+    }
+    nb.updateHelper = function () {
+        var corners = getBBox();
+        var rad = nb.attrs.rotate * Math.PI / 180;
+        var radius = nb.attrs.size.width / 2 * nb.attrs.scale.x; 
+        var cx = nb.attrs.center.x + nb.attrs.translate.x + radius * nb.opts.distance * Math.cos(rad);
+        var cy = nb.attrs.center.y + nb.attrs.translate.y + radius * nb.opts.distance * Math.sin(rad);
+        nb.handles.rPoint.attr({
+            cx: cx,
+            cy: cy
+        })
+        nb.handles.line.toFront().attr({
+            path: [ [ 'M', nb.attrs.center.x + nb.attrs.translate.x + nb.attrs.size.width / 2, nb.attrs.center.y + nb.attrs.translate.y ], [ 'L', nb.handles.rPoint.attrs.cx, nb.handles.rPoint.attrs.cy ] ]
+        });
+		if ( nb.helperBBox ) {
+			nb.helperBBox.toFront().attr({
+				path: [
+					[ 'M', corners[0].x, corners[0].y ],
+					[ 'L', corners[1].x, corners[1].y ],
+					[ 'L', corners[2].x, corners[2].y ],
+					[ 'L', corners[3].x, corners[3].y ],
+					[ 'L', corners[0].x, corners[0].y ]
+					]
+				});
+        }
+        var bboxHandleDirection = [
+            [ -1, -1 ], [ 1, -1 ], [ 1, 1 ], [ -1, 1 ],
+            [  0, -1 ], [ 1,  0 ], [ 0, 1 ], [ -1, 0 ]
+        ];
+
+        if ( nb.handles.bbox ) {
+            nb.handles.bbox.map(function (handle, i) {
+                    var cx, cy, j, k;
+
+                    if ( handle.isCorner ) {
+                        cx = corners[i].x;
+                        cy = corners[i].y;
+                    } else {
+                        j  = i % 4;
+                        k  = ( j + 1 ) % corners.length;
+                        cx = ( corners[j].x + corners[k].x ) / 2;
+                        cy = ( corners[j].y + corners[k].y ) / 2;
+                    }
+
+                    handle.element.toFront()
+                    .attr({
+                            x: cx - (nb.opts.size),
+                            y: cy - (nb.opts.size)
+                        })
+                    .transform('R' + nb.attrs.rotate);
+
+                    handle.x = bboxHandleDirection[i][0];
+                    handle.y = bboxHandleDirection[i][1];
+                });
+        }
+            
     }
     
 	function getBBox() {
@@ -318,8 +358,8 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
 			};
 
 		var radius = {
-			x: nb.attrs.size.x / 2 * nb.attrs.scale.x,
-			y: nb.attrs.size.y / 2 * nb.attrs.scale.y
+			x: nb.attrs.size.width / 2 * nb.attrs.scale.x,
+			y: nb.attrs.size.height / 2 * nb.attrs.scale.y
 			};
 
 		var
@@ -345,9 +385,11 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
 }
 
 
-img = paper.ellipse(100 ,200,50,100 ).attr({fill: 'yellow'});
-                //paper.freeTransform(img);
-                var nb = paper.nbTransform(img);
+img = paper.ellipse(100 ,200,50,100 ).attr({fill: 'yellow'}).transform('...R45');
+rect = paper.rect(300,300,50, 50).attr({fill: 'yellow'});
+set = paper.set(img,rect)
+                paper.freeTransform(img);
+                //var nb = paper.nbTransform(img);
         }] 
         
     }
