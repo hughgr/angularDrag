@@ -1,10 +1,4 @@
-
-/*
- * Licensed under the MIT license:
- * http://www.opensource.org/licenses/mit-license.php
- *
- */
-
+(function () {
 Raphael.fn.freeTransform = function(subject, options, callback) {
 	// Enable method chaining
 	if ( subject.freeTransform ) { return subject.freeTransform; }
@@ -1002,3 +996,5 @@ Raphael.fn.freeTransform = function(subject, options, callback) {
 	// Enable method chaining
 	return ft;
 };
+
+})()

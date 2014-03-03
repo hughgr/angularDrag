@@ -11,4 +11,17 @@ controllers.controller('indexCtrl', ['$scope', '$timeout', function ($scope, $ti
     $scope.showAlert = function () {
         alert(1)
     }
+    
+
+/*
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/mit-license.php
+ *
+ */
+
+
+
+
+
+
 }])

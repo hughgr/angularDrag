@@ -22,7 +22,7 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
             $(node).draggable();                
         },
         controller: ['$scope', '$compile', function($scope, $compile) {
-            var str = '<select ng-model="target" ng-options="t.name for t in targets"><option value="">选择一个对象</option></select>' +
+                var str = '<select ng-model="target" ng-change="showBBox(target)" ng-options="t.name for t in targets" ><option value="">选择一个对象</option></select>' +
                       '<button style="color:red" ng-click="moveUp()">上移</button>' +
                       '<button style="color:red" ng-click="moveDown()">下移</button>'+
                       '<button style="color:red" ng-click="changeColor()">变色</button>'+
@@ -64,9 +64,10 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
                 });*/
             /*SVG('rectTest').draggable();*/
             //working rotated drag'n'drop
-            var time = 1000;
+            var time = 100;
             var paper = new Raphael('canvas', 600, 1000);
             var r1 = paper.ellipse(100, 100, 50, 20);
+            var helper = null;
             r1.attr({
                     fill: "red"
                 });
@@ -76,15 +77,14 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
                     opacity: 0.5,
                     transform: "r45"
                 });
-            pos1.showBbox = function () {
-                var paper = this.paper;
-                var r1Bbox = this.getBBox();
-                var matrix2 = this.matrix;
-                var helper = paper.rect(0,0,r1Bbox.width,r1Bbox.height).attr({
-                    stroke: 'green',
-                    strokeWidth: 2
-                });
-
+            $scope.showBBox = function (r) {
+                var bBox = r.value.getBBox(true);
+                var bBoxNew = r.value.getBBox();
+                helper = paper.rect(bBox.x, bBox.y, bBox.width, bBox.height).attr({
+                    stroke: 'black',
+                    strokeWidth: 10,
+                    transform: r.value.matrix.toTransformString()
+                })
             }
             var pos2 = paper.rect(200, 200, 50, 50).attr({
                     fill: "blue",
@@ -94,9 +94,9 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
 
             var set = paper.set(pos1, r1, pos2)
             step1();
-            setTimeout(function () {
+            /*setTimeout(function () {
                 $scope.target == null && alert('选择一个对象')
-            }, 5000)
+            }, 5000)*/
             $scope.targets = [
                 {name: '集合', value: set },
                 {name: 'r1', value: r1},
@@ -145,6 +145,7 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
             function drag_start(x, y, e) {
                 $('#mousePoint').val(x + '::' + y)
                 $('#oPoint').val(ox + ':' + oy);
+                helper.hide();
         };
 
 
@@ -163,7 +164,7 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
             // Here's the interesting part, apply an absolute transform 
             // with the dx,dy coordinates minus the previous value for dx and dy
             //
-            set.attr({
+            $scope.target.value.attr({
                     transform: "...T" + (dx - ox) + "," + (dy - oy)
                 });
             //
@@ -178,6 +179,7 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
             // don't forget to reset the original positions.
             ox = 0;
             oy = 0;
+            $scope.showBBox($scope.target)
         }
             $scope.moveUp = function () {
                 $scope.target.value.transform('...T0,-10')
@@ -204,6 +206,24 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
             $scope.discale = function () {
                 $scope.target.value.transform('...S0.5')
             }
+    var cir = paper.ellipse(40,40,20, 40).attr({
+            "fill": "green",
+            "stroke": "red" // border color of the rectangle 
+            });
+    /*window.newcir = cir.clone().attr({ "fill": "yellow" }).transform("t100,100R30S1.5"); 
+    var bbox = newcir.getBBox();
+    var bboxOld = newcir.getBBox(true); //我们通过获得的包围盒来绘制包裹圆的矩形 
+    var helper = paper.rect(bboxOld.x, bboxOld.y, bboxOld.width, bboxOld.height).attr({ "stroke": "black","stroke-width":3 });
+    helper.attr({transform: newcir.matrix.toTransformString()})
+   
+    paper.rect(bboxOld.x, bboxOld.y, bboxOld.width, bboxOld.height).attr({ "stroke": "purple" })*/
+                
+
+
+
+                img = paper.ellipse(200 ,200,50,100 )
+
+                paper.freeTransform(img, {keepRatio: true, showBBox: true, scale: false, draw:'bbox'});
         }] 
         
     }
