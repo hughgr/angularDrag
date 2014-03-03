@@ -218,12 +218,136 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
    
     paper.rect(bboxOld.x, bboxOld.y, bboxOld.width, bboxOld.height).attr({ "stroke": "purple" })*/
                 
+       
+Raphael.fn.nbTransform = function(subject, options, callback) {
+    var paper = this;
+    var bbox = subject.getBBox(true);
+    var nb = subject.nbTransform = {
+		attrs: {
+			x: bbox.x,
+			y: bbox.y,
+			size: { x: bbox.width, y: bbox.height },
+			center: { x: bbox.x + bbox.width  / 2, y: bbox.y + bbox.height / 2 },
+			rotate: 0,
+			scale: { x: 1, y: 1 },
+			translate: { x: 0, y: 0 },
+			ratio: 1, //按比例
+            matrix: subject.matrix
+			},
+        bbox: null,
+        opts: {
+			attrs: { fill: '#F00', stroke: '#000' }, //helper point的颜色
+            size: 5,
+            distance: 1.3
+        },
+        handles: {
+            bbox: [],
+            rPoint: null,
+            line: null
+        }
+    }
+	if ( !Array.prototype.hasOwnProperty('map') ) {
+		Array.prototype.map = function(callback, arg) {
+			var i, mapped = [];
+
+			for ( i in this ) {
+				if ( this.hasOwnProperty(i) ) { mapped[i] = callback.call(arg, this[i], i, this); }
+			}
+
+			return mapped;
+		};
+	}
+    nb.showHelper = function () {
+        nb.handles.line = paper.path([ 'M', nb.attrs.center.x, nb.attrs.center.y ])
+    			        .attr({
+                           stroke: nb.opts.attrs.stroke,
+                           'stroke-dasharray': '- ',
+                           opacity: .5,
+				         });
+        nb.handles.rPoint = paper
+				.circle(nb.attrs.center.x, nb.attrs.center.y, nb.opts.size)
+				.attr(nb.opts.attrs);
+        var corners = getBBox();
+        var rad = nb.attrs.rotate * Math.PI / 180;
+        var radius = nb.attrs.size.x / 2 * nb.attrs.scale.x; 
+        var cx = nb.attrs.center.x + nb.attrs.translate.x + radius * nb.opts.distance * Math.cos(rad);
+        var cy = nb.attrs.center.y + nb.attrs.translate.y + radius * nb.opts.distance * Math.sin(rad);
+        nb.handles.rPoint.attr({
+            cx: cx,
+            cy: cy
+        })
+        nb.handles.line.toFront().attr({
+            path: [ [ 'M', nb.attrs.center.x + nb.attrs.translate.x, nb.attrs.center.y + nb.attrs.translate.y ], [ 'L', nb.handles.rPoint.attrs.cx, nb.handles.rPoint.attrs.cy ] ]
+        });
+
+        
+
+        var helperBBox = paper
+				.path('')
+				.attr({
+					stroke: nb.opts.attrs.stroke,
+					'stroke-dasharray': '- ',
+					opacity: .5
+					})
+				;
+
+            nb.handles.bbox = [];
+        for (var i = 0; i < 8; i++) {
+            var handle = {};
+            handle.axis     = i % 2 ? 'x' : 'y';
+            handle.isCorner = i < 4; //是否是4个角，scale以这个为圆心
+
+            handle.element = paper
+            .rect(nb.attrs.center.x, nb.attrs.center.y, nb.opts.size, nb.opts.size)
+            .attr(nb.opts.attrs) ;
+
+            nb.handles.bbox[i] = handle;
+        }
+
+			/*nb.handles.center.disc = paper
+				.circle(nb.attrs.center.x, nb.attrs.center.y, nb.opts.size.center)
+				.attr(nb.opts.attrs)
+				;*/
+        
+    }
+    
+	function getBBox() {
+		var rad = {  //弧度，弧度=角度*PI /180
+			x: ( nb.attrs.rotate      ) * Math.PI / 180,
+			y: ( nb.attrs.rotate + 90 ) * Math.PI / 180
+			};
+
+		var radius = {
+			x: nb.attrs.size.x / 2 * nb.attrs.scale.x,
+			y: nb.attrs.size.y / 2 * nb.attrs.scale.y
+			};
+
+		var
+			corners = [],
+			signs   = [ { x: -1, y: -1 }, { x: 1, y: -1 }, { x: 1, y: 1 }, { x: -1, y: 1 } ]
+			;
+
+		signs.map(function(sign) {
+			corners.push({
+				x: ( nb.attrs.center.x + nb.attrs.translate.x + sign.x * radius.x * Math.cos(rad.x) ) + sign.y * radius.y * Math.cos(rad.y),
+				y: ( nb.attrs.center.y + nb.attrs.translate.y + sign.x * radius.x * Math.sin(rad.x) ) + sign.y * radius.y * Math.sin(rad.y)
+				});
+		});
+
+		return corners;
+	}
+    nb.init = function () {
+        nb.showHelper();
+    }();
+
+    return nb;
+    
+}
 
 
-
-                img = paper.ellipse(200 ,200,50,100 )
-
-                paper.freeTransform(img, {keepRatio: true, showBBox: true, scale: false, draw:'bbox'});
+img = paper.ellipse(100 ,200,50,100 ).attr({fill: 'yellow'});
+                //paper.freeTransform(img);
+                var nb = paper.nbTransform(img);
         }] 
         
     }
