@@ -22,11 +22,14 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
             $(node).draggable();                
         },
         controller: ['$scope', '$compile', function($scope, $compile) {
-            var str = '<button style="color:red" ng-click="moveUp()">上移</button>' +
+            var str = '<select ng-model="target" ng-options="t.name for t in targets"><option value="">选择一个对象</option></select>' +
+                      '<button style="color:red" ng-click="moveUp()">上移</button>' +
                       '<button style="color:red" ng-click="moveDown()">下移</button>'+
                       '<button style="color:red" ng-click="changeColor()">变色</button>'+
                       '<button style="color:red" ng-click="rotate()">旋转</button>' +
-                      '<button style="color:red" ng-click="scale()">拉伸</button>'
+                      '<button style="color:red" ng-click="scale()">拉伸</button>' +
+                      '<button style="color:red" ng-click="discale()">缩小</button>' +
+                      '<button style="color:blue" ng-click="">计算原点，整体旋转</button>'
             var newNode = $(str);
             $compile(newNode)($scope);
             newNode.appendTo('#ctrl');
@@ -61,23 +64,28 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
                 });*/
             /*SVG('rectTest').draggable();*/
             //working rotated drag'n'drop
-            var time = 100;
-            var paper = new Raphael('canvas', 400, 400);
+            var time = 1000;
+            var paper = new Raphael('canvas', 600, 1000);
             var r1 = paper.ellipse(100, 100, 50, 20);
             r1.attr({
                     fill: "red"
                 });
-            r1.showBbox = function () {
-                var paper = this.paper;
-                var r1Bbox = this.getBBox();
-
-            }
             //r1.attr({fill:"green"});
-            var pos1 = paper.rect(200, 100, 50, 50).attr({
+            window.pos1 = paper.rect(200, 100, 50, 50).attr({
                     fill: "blue",
                     opacity: 0.5,
                     transform: "r45"
                 });
+            pos1.showBbox = function () {
+                var paper = this.paper;
+                var r1Bbox = this.getBBox();
+                var matrix2 = this.matrix;
+                var helper = paper.rect(0,0,r1Bbox.width,r1Bbox.height).attr({
+                    stroke: 'green',
+                    strokeWidth: 2
+                });
+
+            }
             var pos2 = paper.rect(200, 200, 50, 50).attr({
                     fill: "blue",
                     opacity: 0.5,
@@ -86,7 +94,15 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
 
             var set = paper.set(pos1, r1, pos2)
             step1();
-
+            setTimeout(function () {
+                $scope.target == null && alert('选择一个对象')
+            }, 5000)
+            $scope.targets = [
+                {name: '集合', value: set },
+                {name: 'r1', value: r1},
+                {name: 'pos1', value: pos1},
+                {name: 'pos2', value: pos2}
+            ]
             function step1() {
                 r1.animate({
                         transform: "t100,0"
@@ -148,7 +164,7 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
             // with the dx,dy coordinates minus the previous value for dx and dy
             //
             set.attr({
-                    transform: "...R90T" + (dx - ox) + "," + (dy - oy)
+                    transform: "...T" + (dx - ox) + "," + (dy - oy)
                 });
             //
             // store the previous versions of dx,dy for use in the next move call.
@@ -163,31 +179,31 @@ directives.directive('dragable', ['$timeout', '$compile', function ($timeout, $c
             ox = 0;
             oy = 0;
         }
-            /*$scope.moveUp = function () {
-                var tmp = ellipse.cy();
-                ellipse.cy(tmp - 10);
+            $scope.moveUp = function () {
+                $scope.target.value.transform('...T0,-10')
             }
             $scope.moveDown = function () {
-                var tmp = ellipse.cy();
-                ellipse.cy(tmp + 10);
+                $scope.target.value.animate({transform: '...T0,200'}, 200, '<>')
             }
             $scope.rotate = function () {
-                var tmp = ellipse.trans.rotation;
-                ellipse.rotate(tmp + 60)
+                $scope.target.value.animate({transform: '...R45'}, 200, 'elastic')
             }
             $scope.changeColor = function () {
-                var color = '#' + (~~(Math.random() * 255)).toString(16) + (~~(Math.random() * 255)).toString(16) + (~~(Math.random() * 255)).toString(16);
+                /*var color = '#' + (~~(Math.random() * 255)).toString(16) + (~~(Math.random() * 255)).toString(16) + (~~(Math.random() * 255)).toString(16);*/
+                var color = 'rgb(' + ~~(Math.random() * 255) + ',' + ~~(Math.random() * 255) + ',' + ~~(Math.random() * 255) +')' 
                 console.log(color)
-                ellipse.animate(200, '>', 0).attr({
-                        fill: color 
-                })
-                [>ellipse.attr({
+                $scope.target.value.animate({fill: color}, 500);
+                $('#rgb').val(color);
+                /*ellipse.attr({
                     fill: color
-                })<]
+                })*/
             }
             $scope.scale = function () {
-                var tmp = ellipse.scale();
-            }*/
+                $scope.target.value.transform('...S2')
+            }
+            $scope.discale = function () {
+                $scope.target.value.transform('...S0.5')
+            }
         }] 
         
     }

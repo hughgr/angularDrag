@@ -80,17 +80,21 @@
     left: 0px;
 }
 .operation div {
-    height: 100px;
     border: 1px black solid;
     margin: 20px 0px;
     
+}
+#ctrl {
+    cursor: move;
 }
 
 </style>
 <body ng-controller="indexCtrl">
  <div class="operation">
      <div class="background">背景图{{text}}</div>
-    <div class="text" id="ctrl" dragable>文字块</div>
+    <div class="text" id="ctrl" dragable>
+        <h2>操作区，可拖动</h2>
+    </div>
     <div class="focusBg">焦点图</div>
     <!--<svg xmlns="http://www.w3.org/2000/svg" width="200px" height="200px" version="1.1" id="svg">
         [><rect id="rectTest" width="100" height="50" fill="yellow" x="100" y="50"></rect><]
@@ -103,6 +107,9 @@
      <div>
         dragOffSetPoint <input type="text" id="dragOffSetPoint" /> 
         oPoint <input type="text" id="oPoint" /> 
+     </div>
+     <div>
+        RGB <input type="text" style="color:red" id="rgb" />
      </div>
      <div>
         
