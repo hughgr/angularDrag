@@ -244,7 +244,8 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
             bbox: [],
             rPoint: null,
             line: null
-        }
+        },
+        items: []
     }
 	if ( !Array.prototype.hasOwnProperty('map') ) {
 		Array.prototype.map = function(callback, arg) {
@@ -256,6 +257,13 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
 
 			return mapped;
 		};
+	}
+
+	function transformPos(matrix, pos) {
+		return {
+			x: matrix.a * pos.x + matrix.c * pos.y + matrix.e,
+			y: matrix.b * pos.x + matrix.d * pos.y + matrix.f
+		}
 	}
     nb.showHelper = function () {
         nb.handles.line = paper.path([ 'M', nb.attrs.center.x, nb.attrs.center.y ])
@@ -372,6 +380,10 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
 				x: ( nb.attrs.center.x + nb.attrs.translate.x + sign.x * radius.x * Math.cos(rad.x) ) + sign.y * radius.y * Math.cos(rad.y),
 				y: ( nb.attrs.center.y + nb.attrs.translate.y + sign.x * radius.x * Math.sin(rad.x) ) + sign.y * radius.y * Math.sin(rad.y)
 				});
+            /*
+				x: ( nb.attrs.center.x + nb.attrs.translate.x + sign.x * radius.x * Math.cos(rad.x) ),
+                y: ( nb.attrs.center.y + nb.attrs.translate.y + sign.y * radius.y * Math.sin(rad.y) )
+                */
 		});
 
 		return corners;
@@ -385,11 +397,11 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
 }
 
 
-img = paper.ellipse(100 ,200,50,100 ).attr({fill: 'yellow'}).transform('...R45');
-rect = paper.rect(300,300,50, 50).attr({fill: 'yellow'});
-set = paper.set(img,rect)
-                paper.freeTransform(img);
-                //var nb = paper.nbTransform(img);
+window.img = paper.ellipse(100 ,200,50,100 ).attr({fill: 'yellow'});
+window.rect = paper.rect(300,300,50, 50).attr({fill: 'yellow'});
+window.set1 = paper.set(img,rect)
+                //window.nb = paper.freeTransform(set1);
+                window.nb = paper.nbTransform(img);
         }] 
         
     }
