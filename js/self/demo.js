@@ -172,8 +172,10 @@ NB.prototype._drawLine = function () {
                 return self
 }
                     */
+
+    //testmatrix: '0.866025,0.500000,-0.500000,0.866025,490,348' 旋转30度
     draw = SVG('canvas').fixSubPixelOffset();
-    ellipse = draw.ellipse(180, 96).attr({
+    ellipse = draw.ellipse(150, 66).attr({
             stroke: 'red',
             strokeWidth: '2',
             cx: 100,
