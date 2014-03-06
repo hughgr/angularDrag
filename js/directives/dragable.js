@@ -400,8 +400,8 @@ Raphael.fn.nbTransform = function(subject, options, callback) {
 window.img = paper.ellipse(100 ,200,50,100 ).attr({fill: 'yellow'});
 window.rect = paper.rect(300,300,50, 50).attr({fill: 'yellow'});
 window.set1 = paper.set(img,rect)
-                //window.nb = paper.freeTransform(set1);
-                window.nb = paper.nbTransform(img);
+                window.nb = paper.freeTransform(img);
+                //window.nb = paper.nbTransform(img);
         }] 
         
     }
