@@ -181,6 +181,5 @@ NB.prototype._drawLine = function () {
             cx: 100,
             cy: 100,
     });
-    ellipse.init();
     
 })
