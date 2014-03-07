@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body style='font-family:arial'>
+<center>
+(This example tested in: IE11/CH31/FF23)
+<div style='width:90%;background-color:gainsboro;text-align:justify;padding:10px;border-radius:8px;'>
+Sequentially Transform an element about a fixed 'center point' in the element.
+For this example, use the initial center of its bounding box.
+</div>
+<div id="svgDiv" style='background-color:lightblue;width:400px;height:400px;'>
+<svg id="mySVG" width="400" height="400">
+<polygon id="myPolygon" fill="red" points="140,60 100,300 300,200 340,140" />
+<circle id="centerPoint" r="4" fill="lime" stroke="black" stroke-width="1" />
+</svg>
+</div>
+<button onClick=rotate()>rotate</button>
+<button onClick=scaleXY()>scaleXY</button>
+<button onClick=skewX()>skewX</button>
+<button onClick=skewY()>skewY</button>
+<button onClick=startOver()>start over</button>
+ <br />SVG Source:<br />
+<textarea id=svgSourceValue style='font-size:110%;font-family:lucida console;width:90%;height:400px'></textarea>
+</center>
+</body>
+<script>
+document.addEventListener("onload",init(),false)
+function init()
+{
+    initTransform()
+    svgSourceValue.value=svgDiv.innerHTML
+}
+
+var Cx,Cy
+var TransformRequestObj
+var TransformList;
+//---onload---
+function initTransform()
+{
+    var bb=myPolygon.getBBox()
+    var bbx=bb.x
+    var bby=bb.y
+    var bbw=bb.width
+    var bbh=bb.height
+    Cx=bbx+.5*bbw
+    Cy=bby+.5*bbh
+    centerPoint.setAttribute("cx",Cx)
+    centerPoint.setAttribute("cy",Cy)
+
+    TransformRequestObj=mySVG.createSVGTransform()
+    var animTransformList=myPolygon.transform
+    TransformList=animTransformList.baseVal
+}
+//--button--
+function rotate()
+{
+    var angle=10
+
+    TransformRequestObj.setRotate(10,Cx,Cy)
+    TransformList.appendItem(TransformRequestObj)
+    TransformList.consolidate()
+
+    svgSourceValue.value=svgDiv.innerHTML
+}
+//---button---
+function scaleXY()
+{
+    var scaleX=1.05
+    var scaleY=1.05
+
+    TransformRequestObj.setTranslate(Cx,Cy)
+    TransformList.appendItem(TransformRequestObj)
+    TransformList.consolidate()
+    TransformRequestObj.setScale(scaleX,scaleY)
+    TransformList.appendItem(TransformRequestObj)
+    TransformList.consolidate()
+    TransformRequestObj.setTranslate(-Cx,-Cy)
+    TransformList.appendItem(TransformRequestObj)
+    TransformList.consolidate()
+
+    svgSourceValue.value=svgDiv.innerHTML
+
+}
+//---button---
+function skewX()
+{
+    var skwX=5 //---deg
+
+    TransformRequestObj.setTranslate(Cx,Cy)
+    TransformList.appendItem(TransformRequestObj)
+    TransformList.consolidate()
+
+    TransformRequestObj.setSkewX(skwX)
+    TransformList.appendItem(TransformRequestObj)
+    TransformList.consolidate()
+
+    TransformRequestObj.setTranslate(-Cx,-Cy)
+    TransformList.appendItem(TransformRequestObj)
+    TransformList.consolidate()
+
+   svgSourceValue.value=svgDiv.innerHTML
+}
+//---button---
+function skewY()
+{
+    var skwY=10 //---deg
+    TransformRequestObj.setTranslate(Cx,Cy)
+    TransformList.appendItem(TransformRequestObj)
+    TransformList.consolidate()
+
+    TransformRequestObj.setSkewY(skwY)
+    TransformList.appendItem(TransformRequestObj)
+    TransformList.consolidate()
+
+    TransformRequestObj.setTranslate(-Cx,-Cy)
+    TransformList.appendItem(TransformRequestObj)
+    TransformList.consolidate()
+
+    svgSourceValue.value=svgDiv.innerHTML
+}
+//---button---
+function startOver()
+{
+    myPolygon.removeAttribute("transform")
+    TransformRequestObj=mySVG.createSVGTransform()
+    var animTransformList=myPolygon.transform
+    TransformList=animTransformList.baseVal
+}
+
+</script>
+</html>

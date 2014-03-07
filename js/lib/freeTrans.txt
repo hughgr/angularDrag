@@ -364,7 +364,7 @@ Raphael.fn.freeTransform = function(subject, options, callback) {
 					if ( handle.isCorner && nb.opts.keepRatio.indexOf('bboxCorners') !== -1 ) {
 						dx = ( handle.axis === 'x' ? -dy : dy ) * ( ( ( cos + sin ) < 0 || ( cos - sin ) < 0 ) ? -1 : 1 ) * ( ( nb.attrs.size.x * nb.attrs.scale.x ) / ( nb.attrs.size.y * nb.attrs.scale.y ) );
 					}
-
+matrix(sx, 0, 0, sy, cx-sx*cx, cy-sy*cy)
 					// First rotate dx, dy to element alignment
 					rx = dx * cos - dy * sin;
 					ry = dx * sin + dy * cos;

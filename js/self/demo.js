@@ -12,7 +12,7 @@ SVG.extend(SVG.Element, {
                 height: self.bbox().height,
                 centerX: self.bbox().cx,
                 centerY: self.bbox().cy,
-                matrix: [1,0,0,1,0,0]
+                matrix: '1,0,0,1,0,0'
             },
             config: {
                 R: 0,                 //[R]otation
@@ -29,6 +29,8 @@ SVG.extend(SVG.Element, {
             },
             size: 5,
             helperPath: null,
+            rototePoint: null,
+            line: null,
             handles: {
         
             }
@@ -57,6 +59,23 @@ SVG.extend(SVG.Element, {
             }
 
     },
+    drawRotatePoint: function () {
+        var self = this;
+        var parent  = this.parent._parent(SVG.Nested) || this._parent(SVG.Doc);
+        self.NB.rototePoint = parent.circle(self.NB.size * 2).attr({
+            fill: 'red',
+            cx: self.NB.attrs.centerX,
+            cy: self.NB.attrs.centerY - self.NB.attrs.height/2 * 1.6 
+        })
+        var pathStr = 'M' + self.NB.rototePoint.cx() + ',' + (self.NB.attrs.centerY - self.NB.attrs.height / 2) + 
+                      'L' + self.NB.rototePoint.cx() + ',' + self.NB.rototePoint.cy();
+        self.NB.line = parent.path(pathStr).back().attr({
+                stroke: '#000',
+                'stroke-dasharray': '4,4',
+                fill: 'transparent'
+
+         })
+    },
     updateCorners: function () {
         var matrix = this.NB.attrs.matrix;
         var corners = this.NB.corners.bboxs;
@@ -68,6 +87,11 @@ SVG.extend(SVG.Element, {
         var matrix = this.NB.attrs.matrix;
         var path = this.NB.helperPath;
         path.transform('matrix',matrix)
+    },
+    updateRotatePoint: function () {
+        var matrix = this.NB.attrs.matrix;
+        this.NB.line.matrix(matrix);
+        this.NB.rototePoint.matrix(matrix); 
     },
     drawLine: function () {
         var self = this,
@@ -125,6 +149,30 @@ SVG.extend(SVG.Element, {
           SVG.on(window, 'mouseup',   end)
       }
     },
+    doRotate: function () {
+        var rp = this.NB.rototePoint;
+      var self = this;
+      var startEvent 
+      rp.on('mousedown', start)
+      function rotate (event) {
+          var matrix = self.NB.attrs.matrix.split(',')
+          var cx = self.NB.config.cx + self.NB.config.tx;
+          var cy = self.NB.config.cy + self.NB.config.ty;
+          var raidus = Math.PI / 2 + Math.atan2(event.pageY- cy,event.pageX - cx);
+          var rotation = raidus * 180 /Math.PI;
+          self.rotateTo(rotation)
+      }
+      function end (event) {
+          SVG.off(window, 'mousemove', rotate)
+          SVG.off(window, 'mouseup',   end)
+      }
+      function start (event) {
+          SVG.on(window, 'mousemove', rotate)
+          SVG.on(window, 'mouseup',   end)
+      }
+        
+         
+    },
     moveTo: function (tx, ty) {
         var cfg = this.NB.config;
         //cfg.cx += tx;
@@ -153,12 +201,14 @@ SVG.extend(SVG.Element, {
         this.matrix(this.NB.attrs.matrix);
         this.updateCorners();
         this.updatePath();
+        this.updateRotatePoint();
+        showMax();
     },
     _transfromToMatrix: function () {
         var config = this.NB.config;
-        config.R = config.R * ( Math.PI / 180 );
-        var sin = Math.sin(config.R);
-        var cos = Math.cos(config.R);
+        var R = config.R * ( Math.PI / 180 );
+        var sin = Math.sin(R);
+        var cos = Math.cos(R);
         var cx = config.cx;
         var cy = config.cy;
         var tx = config.tx;
@@ -179,7 +229,9 @@ SVG.extend(SVG.Element, {
         self.showHelper();
         self.drawCorners();
         self.drawLine();
+        self.drawRotatePoint();
         self.doDrag();
+        self.doRotate();
     },
 
         //parent.rect(helperBox.width, helperBox.height).attr({
@@ -264,13 +316,13 @@ NB.prototype._drawLine = function () {
             stroke: 'red',
             strokeWidth: '2',
             cx: 100,
-            cy: 100
+            cy: 200
     });
     rect = draw.rect(100, 50).attr({
             stroke: 'red',
             strokeWidth: '2',
             x: 200,
-            y: 45 
+            y: 200 
     });
     rect1 = draw.rect(100, 50).attr({
             stroke: 'transparent',
@@ -291,12 +343,12 @@ rect1.init();
         ellipse.moveTo(i,100);
         showMax();
     }, 50)*/
-    /*window.showMax = function () {
-        var max = ellipse.NB.attrs.matrix.split(',');
+    window.showMax = function () {
+        var max = group.NB.attrs.matrix.split(',');
         var str = '<div>['+ max[0].slice(0,4) + ' , ' + max[2].slice(0,4) + ' , ' + max[4].slice(0,6) + ']</div>' +
                          '<div>['+ max[1].slice(0,4) + ' , ' + max[3].slice(0,4) + ' , ' + max[5].slice(0,6) + ']</div>' +                        
                          '<div>[0.0 , 0.0 , 1.0]';
         $('#max').html(str)
-    }*/
+    }
     
 })
