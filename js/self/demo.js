@@ -109,6 +109,7 @@ SVG.extend(SVG.Element, {
         cfg.tx = tx;
         cfg.ty = ty;
         this._applyMatrix();
+        return this;
     },
     scaleTo: function (sx, sy, cx, cy) {
         var cfg = this.NB.config;
@@ -120,6 +121,7 @@ SVG.extend(SVG.Element, {
         var cfg = this.NB.config;
         cfg.R = angle;
         this._applyMatrix();
+        return this;
     },
     _applyMatrix: function () {
         this._transfromToMatrix();
@@ -238,15 +240,25 @@ NB.prototype._drawLine = function () {
             cx: 100,
             cy: 100,
     });
+    rect = draw.rect(100, 50).attr({
+            stroke: 'red',
+            strokeWidth: '2',
+            x: 400,
+            y: 100
+    });
     ellipse.init();
+    rect.init();
     var i = 0 ;
-    var a = setInterval(function () {
+window.group = draw.group()
+group.add(ellipse);
+group.add(rect);
+    /*var a = setInterval(function () {
         i ++;
 
         ellipse.rotateTo(i * 25);
         ellipse.moveTo(i,100);
         showMax();
-    }, 50)
+    }, 50)*/
     window.showMax = function () {
         var max = ellipse.NB.attrs.matrix.split(',');
         var str = '<div>['+ max[0].slice(0,4) + ' , ' + max[2].slice(0,4) + ' , ' + max[4].slice(0,6) + ']</div>' +
