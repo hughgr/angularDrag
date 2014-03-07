@@ -86,7 +86,7 @@ SVG.extend(SVG.Element, {
 
     },
     doDrag: function () {
-        var matrix = this.NB.attrs.matrix;
+        /*var matrix = this.NB.attrs.matrix;
         var self = this;
         this.dragstart = function (move) {
             console.log(move)
@@ -97,13 +97,38 @@ SVG.extend(SVG.Element, {
             matrix[4] = self.x() - self.width() + '';
             self.updatePath();
             self.updateCorners();
-        }
-        this.draggable();
+        }*/
+
+      var self = this;
+      var startEvent 
+      self.on('mousedown', start)
+      var firstMoveX;
+      var firstMoveY;
+      var cx = self.NB.config.cx;
+      var cy = self.NB.config.cy; 
+      var offSetX,offSetY;
+      function drag (event) {
+          offSetX = event.pageX - firstMoveX;
+          offSetY = event.pageY - firstMoveY;
+          self.moveTo(cx + offSetX, cy + offSetY) 
+      }
+      function end (event) {
+          SVG.off(window, 'mousemove', drag)
+          SVG.off(window, 'mouseup',   end)
+          cx = cx + offSetX;
+          cy = cy + offSetY
+      }
+      function start (event) {
+          firstMoveX = event.pageX;
+          firstMoveY = event.pageY; 
+          SVG.on(window, 'mousemove', drag)
+          SVG.on(window, 'mouseup',   end)
+      }
     },
     moveTo: function (tx, ty) {
         var cfg = this.NB.config;
-        /*cfg.cx += tx;
-        cfg.cy += ty */
+        //cfg.cx += tx;
+        //cfg.cy += ty 
         tx = tx - this.NB.attrs.centerX;
         ty = ty - this.NB.attrs.centerY;
         cfg.tx = tx;
@@ -234,24 +259,31 @@ NB.prototype._drawLine = function () {
 
     //testmatrix: '0.866025,0.500000,-0.500000,0.866025,490,348' 旋转30度
     draw = SVG('canvas').fixSubPixelOffset();
+    group = draw.group();
     ellipse = draw.ellipse(100, 50).attr({
             stroke: 'red',
             strokeWidth: '2',
             cx: 100,
-            cy: 100,
+            cy: 100
     });
     rect = draw.rect(100, 50).attr({
             stroke: 'red',
             strokeWidth: '2',
-            x: 400,
-            y: 100
+            x: 200,
+            y: 45 
     });
-    ellipse.init();
-    rect.init();
+    rect1 = draw.rect(100, 50).attr({
+            stroke: 'transparent',
+            strokeWidth: '2',
+            x: 600,
+            y: 100,
+            fill: 'yellow'
+    });
+group.add(ellipse).add(rect)
+group.init();
+rect1.init();
+    //ellipse.init();
     var i = 0 ;
-window.group = draw.group()
-group.add(ellipse);
-group.add(rect);
     /*var a = setInterval(function () {
         i ++;
 
@@ -259,12 +291,12 @@ group.add(rect);
         ellipse.moveTo(i,100);
         showMax();
     }, 50)*/
-    window.showMax = function () {
+    /*window.showMax = function () {
         var max = ellipse.NB.attrs.matrix.split(',');
         var str = '<div>['+ max[0].slice(0,4) + ' , ' + max[2].slice(0,4) + ' , ' + max[4].slice(0,6) + ']</div>' +
                          '<div>['+ max[1].slice(0,4) + ' , ' + max[3].slice(0,4) + ' , ' + max[5].slice(0,6) + ']</div>' +                        
                          '<div>[0.0 , 0.0 , 1.0]';
         $('#max').html(str)
-    }
+    }*/
     
 })

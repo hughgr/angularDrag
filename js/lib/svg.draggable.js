@@ -73,7 +73,7 @@ SVG.extend(SVG.Element, {
       
       if (element.startEvent) {
         /* calculate move position */
-        var x, y
+        /*var x, y
           , rotation  = element.startPosition.rotation
           , width     = element.startPosition.width
           , height    = element.startPosition.height
@@ -83,15 +83,15 @@ SVG.extend(SVG.Element, {
               zoom: element.startPosition.zoom
             }
         
-        /* caculate new position [with rotation correction] */
+        [> caculate new position [with rotation correction] <]
         x = element.startPosition.x + (delta.x * Math.cos(rotation) + delta.y * Math.sin(rotation))  / element.startPosition.zoom
         y = element.startPosition.y + (delta.y * Math.cos(rotation) + delta.x * Math.sin(-rotation)) / element.startPosition.zoom
         
-        /* recalculate any offset */
+        [> recalculate any offset <]
         if (element._offset) {
           x -= element._offset.x
           y -= element._offset.y
-        }
+        }*/
         
         /* keep element within constrained box */
         if (constraint.minX != null && x < constraint.minX)
@@ -118,7 +118,11 @@ SVG.extend(SVG.Element, {
           }
         }
         else if (typeof constraint == "object") {
-          element.move(x, y)          
+          //element.move(x, y)    
+          x = event.pageX;
+          y = event.pageY;
+
+          element.moveTo(x, y) 
         }
 
         /* invoke any callbacks */
