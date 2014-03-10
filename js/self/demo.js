@@ -2,7 +2,7 @@
 $(function(){
 SVG.extend(SVG.Element, {
     
-    showHelper: function () {
+    initHelper: function () {
         var self = this;
         self.NB = {
             attrs: {
@@ -29,8 +29,8 @@ SVG.extend(SVG.Element, {
             },
             size: 5,
             helperPath: null,
-            rototePoint: null,
-            line: null,
+            rotatePoint: null,
+            rotateline: null,
             handles: {
         
             }
@@ -62,14 +62,14 @@ SVG.extend(SVG.Element, {
     drawRotatePoint: function () {
         var self = this;
         var parent  = this.parent._parent(SVG.Nested) || this._parent(SVG.Doc);
-        self.NB.rototePoint = parent.circle(self.NB.size * 2).attr({
+        self.NB.rotatePoint = parent.circle(self.NB.size * 2).attr({
             fill: 'red',
             cx: self.NB.attrs.centerX,
             cy: self.NB.attrs.centerY - self.NB.attrs.height/2 * 1.6 
         })
-        var pathStr = 'M' + self.NB.rototePoint.cx() + ',' + (self.NB.attrs.centerY - self.NB.attrs.height / 2) + 
-                      'L' + self.NB.rototePoint.cx() + ',' + self.NB.rototePoint.cy();
-        self.NB.line = parent.path(pathStr).back().attr({
+        var pathStr = 'M' + self.NB.rotatePoint.cx() + ',' + (self.NB.attrs.centerY - self.NB.attrs.height / 2) + 
+                      'L' + self.NB.rotatePoint.cx() + ',' + self.NB.rotatePoint.cy();
+            self.NB.rotateline = parent.path(pathStr).back().attr({
                 stroke: '#000',
                 'stroke-dasharray': '4,4',
                 fill: 'transparent'
@@ -77,7 +77,7 @@ SVG.extend(SVG.Element, {
          })
     },
     updateCorners: function () {
-        var matrix = this.NB.attrs.matrix;
+        var matrix = this.NB.attrs.matrix2;
         var corners = this.NB.corners.bboxs;
         for (var i = 0; i < corners.length; i++) {
             corners[i].transform('matrix', matrix);
@@ -90,8 +90,8 @@ SVG.extend(SVG.Element, {
     },
     updateRotatePoint: function () {
         var matrix = this.NB.attrs.matrix;
-        this.NB.line.matrix(matrix);
-        this.NB.rototePoint.matrix(matrix); 
+        this.NB.rotateline.matrix(matrix);
+        this.NB.rotatePoint.matrix(matrix); 
     },
     drawLine: function () {
         var self = this,
@@ -124,13 +124,13 @@ SVG.extend(SVG.Element, {
         }*/
 
       var self = this;
-      var startEvent 
       self.on('mousedown', start)
       var firstMoveX;
       var firstMoveY;
       var cx = self.NB.config.cx;
       var cy = self.NB.config.cy; 
       var offSetX,offSetY;
+      var ts;
       function drag (event) {
           offSetX = event.pageX - firstMoveX;
           offSetY = event.pageY - firstMoveY;
@@ -139,28 +139,59 @@ SVG.extend(SVG.Element, {
       function end (event) {
           SVG.off(window, 'mousemove', drag)
           SVG.off(window, 'mouseup',   end)
-          cx = cx + offSetX;
-          cy = cy + offSetY
+          if ( !!offSetX) {
+              /*self.showHelper();*/
+              cx = cx + offSetX;
+              cy = cy + offSetY
+          }
       }
       function start (event) {
-          firstMoveX = event.pageX;
-          firstMoveY = event.pageY; 
-          SVG.on(window, 'mousemove', drag)
-          SVG.on(window, 'mouseup',   end)
+          console.log(event)
+          ts = new Date().getTime();
+          //self.hideHelper();
+          setTimeout(function(){
+              var ts2 = new Date().getTime
+              firstMoveX = event.pageX;
+              firstMoveY = event.pageY; 
+              SVG.on(window, 'mousemove', drag)
+              SVG.on(window, 'mouseup',   end)
+          
+          },1)
       }
     },
     doRotate: function () {
-        var rp = this.NB.rototePoint;
+      var rp = this.NB.rotatePoint;
       var self = this;
       var startEvent 
       rp.on('mousedown', start)
       function rotate (event) {
           var matrix = self.NB.attrs.matrix.split(',')
+          var ex = event.pageX;
+          var ey = event.pageY;
           var cx = self.NB.config.cx + self.NB.config.tx;
           var cy = self.NB.config.cy + self.NB.config.ty;
-          var raidus = Math.PI / 2 + Math.atan2(event.pageY- cy,event.pageX - cx);
-          var rotation = raidus * 180 /Math.PI;
-          self.rotateTo(rotation)
+          if (event.shiftKey) {
+              if (ex - cx >= 0 && ey - cy <= 0 ) {  //第一象限
+                  self.rotateTo(90) 
+              }
+              else if (ex - cx >= 0 && ey - cy >= 0 ) {  //第二象限
+                  self.rotateTo(180) 
+              }
+              else if (ex - cx <= 0 && ey - cy >= 0 ) {  //第三象限
+                  self.rotateTo(270) 
+              }
+              else {  
+                self.rotateTo(0)
+              }
+      
+          } else {
+              var matrix = self.NB.attrs.matrix.split(',')
+              var cx = self.NB.config.cx + self.NB.config.tx;
+              var cy = self.NB.config.cy + self.NB.config.ty;
+              var raidus = Math.PI / 2 + Math.atan2(event.pageY- cy,event.pageX - cx);
+              var rotation = raidus * 180 /Math.PI;
+              self.rotateTo(rotation)
+          }
       }
       function end (event) {
           SVG.off(window, 'mousemove', rotate)
@@ -171,6 +202,36 @@ SVG.extend(SVG.Element, {
           SVG.on(window, 'mouseup',   end)
       }
         
+         
+    },
+    doScale: function () {
+        var self = this;
+        var conners = self.NB.corners.bboxs;
+        var startX,startY,lastSx,lastSy;
+        for (var i = 0; i < conners.length; i++) {
+            conners[i].on('mousedown', start)
+        }
+        var i = 0;
+
+        lastSx = Math.abs(self.NB.config.sx);
+        lastSy = Math.abs(self.NB.config.sy);
+        function scale (event) {
+            sx = (event.pageX - startX) / (self.NB.attrs.width / 2 )
+            sy = (event.pageY - startY) / (self.NB.attrs.height / 2 )
+            event.shiftKey ? self.scaleTo(lastSx + sx, lastSx + sx) : self.scaleTo(lastSx + sx, lastSy + sy);
+        }
+        function end () {
+          SVG.off(window, 'mousemove', scale)
+          SVG.off(window, 'mouseup',   end)
+        }
+        function start (event) {
+          startX = event.pageX;
+          startY = event.pageY;
+          lastSx = self.NB.config.sx;
+          lastSy = self.NB.config.sy;
+          SVG.on(window, 'mousemove', scale)
+          SVG.on(window, 'mouseup',   end)
+        }
          
     },
     moveTo: function (tx, ty) {
@@ -184,11 +245,13 @@ SVG.extend(SVG.Element, {
         this._applyMatrix();
         return this;
     },
-    scaleTo: function (sx, sy, cx, cy) {
+    scaleTo: function (sx, sy) {
         var cfg = this.NB.config;
         cfg.sx = sx;
         cfg.sy = sy;
         this._applyMatrix();
+        //this._scaleMatrix();
+
     },
     rotateTo: function (angle) {
         var cfg = this.NB.config;
@@ -196,13 +259,31 @@ SVG.extend(SVG.Element, {
         this._applyMatrix();
         return this;
     },
+    hideHelper: function () {
+        var self = this;
+        self.NB.helperPath.hide();
+        self.NB.rotatePoint.hide();
+        self.NB.rotateline.hide();
+        for (var i = 0; i < self.NB.corners.bboxs.length; i++) {
+            self.NB.corners.bboxs[i].hide();
+        }
+    },
+    showHelper: function () {
+        var self = this;
+        self.NB.helperPath.show();
+        self.NB.rotatePoint.show();
+        self.NB.rotateline.show();
+        for (var i = 0; i < self.NB.corners.bboxs.length; i++) {
+            self.NB.corners.bboxs[i].show();
+        }
+    },
     _applyMatrix: function () {
         this._transfromToMatrix();
         this.matrix(this.NB.attrs.matrix);
         this.updateCorners();
         this.updatePath();
         this.updateRotatePoint();
-        showMax();
+        /*showMax();*/
     },
     _transfromToMatrix: function () {
         var config = this.NB.config;
@@ -220,18 +301,42 @@ SVG.extend(SVG.Element, {
                  sy * sin,
                 -sx * sin,
                  sy * cos,
-                 sx * (-cx * cos + cy * sin + cx) + tx,
-                 sy * (-cx * sin - cy * cos + cy) + ty
+                 sx * (-cx * cos + cy * sin + cx) + cx - cx * sx + tx,
+                 sy * (-cx * sin - cy * cos + cy) + cy - cy * sy + ty
         ].join(',')
+        this.NB.attrs.matrix2 = [
+                 sx * cos,
+                 sy * sin,
+                -sx * sin,
+                 sy * cos,
+                 sx * (-cx * cos + cy * sin + cx) + cx - cx * sx + tx,
+                 sy * (-cx * sin - cy * cos + cy) + cy - cy * sy + ty
+        ].join(',')
+    },
+    _scaleMatrix: function () {
+        var config = this.NB.config;
+        var matrix = this.NB.attrs.matrix.split(',');
+        matrix[0] = pareseFloat(matrix[0]) * config.sx
+        matrix[3] = pareseFloat(matrix[3]) * config.sy
     },
     init: function () {
         var self = this;
-        self.showHelper();
+        self.initHelper();
         self.drawCorners();
         self.drawLine();
         self.drawRotatePoint();
         self.doDrag();
         self.doRotate();
+        self.doScale();
+        self._applyMatrix();
+        /*self.on('click', function (e) {
+             console.log(e)
+             self.showHelper();
+             e.stopPropagation();
+        });
+        SVG.on(window, 'click', function () {
+             self.hideHelper(); 
+        })*/
     },
 
         //parent.rect(helperBox.width, helperBox.height).attr({
