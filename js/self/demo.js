@@ -76,11 +76,17 @@ SVG.extend(SVG.Element, {
 
          })
     },
+    
     updateCorners: function () {
-        var matrix = this.NB.attrs.matrix2;
+        var matrix = this.NB.attrs.matrix;
         var corners = this.NB.corners.bboxs;
+        var config = this.NB.config;
         for (var i = 0; i < corners.length; i++) {
-            corners[i].transform('matrix', matrix);
+            //3D模式
+            /*corners[i].transform('matrix', matrix);*/
+            //2D模式
+            var pos = this._transformPos(matrix, corners[i].bbox().cx, corners[i].bbox().cy);
+            corners[i].matrix('1,0,0,1,'+(pos.x - corners[i].bbox().cx)+','+(pos.y-corners[i].bbox().cy)).rotate(config.R)
         }
     },
     updatePath: function () {
@@ -91,7 +97,13 @@ SVG.extend(SVG.Element, {
     updateRotatePoint: function () {
         var matrix = this.NB.attrs.matrix;
         this.NB.rotateline.matrix(matrix);
-        this.NB.rotatePoint.matrix(matrix); 
+        /*this.NB.rotatePoint.matrix(matrix); */
+        var rPoint = this.NB.rotatePoint;
+        var pos = this._transformPos(matrix, this.NB.rotatePoint.bbox().cx,this.NB.rotatePoint.bbox().cy);
+        rPoint.matrix('1,0,0,1,'+ (pos.x - rPoint.bbox().cx) + ',' + (pos.y - rPoint.bbox().cy))
+        //var rLine = this.NB.rotateline;
+        /*var linePos = this._transformPos(matrix, rLine.bbox().cx, rLine.bbox().cy);
+        rLine.matrix('1,0,0,1,'+ (linePos.x - rLine.bbox().cx) + ',' + (linePos.y - rLine.bbox().cy)) */
     },
     drawLine: function () {
         var self = this,
@@ -108,6 +120,20 @@ SVG.extend(SVG.Element, {
                 fill: 'transparent'
         });
 
+    },
+    destoryHelper: function () {
+        var self = this.NB;
+        self.helperPath = null;
+    },
+    updateAttr: function () {
+        var self = this.NB.attrs
+        self.x = this.bbox().x;
+        self.y = this.bbox().y;
+        self.width = this.bbox().width;
+        self.height = this.bbox().height;
+        self.centerX = this.bbox().cx;
+        self.centerY = this.bbox().cy;
+        
     },
     doDrag: function () {
         /*var matrix = this.NB.attrs.matrix;
@@ -283,7 +309,7 @@ SVG.extend(SVG.Element, {
         this.updateCorners();
         this.updatePath();
         this.updateRotatePoint();
-        /*showMax();*/
+        showMax();
     },
     _transfromToMatrix: function () {
         var config = this.NB.config;
@@ -313,6 +339,17 @@ SVG.extend(SVG.Element, {
                  sy * (-cx * sin - cy * cos + cy) + cy - cy * sy + ty
         ].join(',')
     },
+    
+    _transformPos: function (matrix, originX, originY) {
+        var max = matrix.split(',');
+        for (var i = 0; i < max.length; i++ ) {
+            max[i] = parseFloat(max[i])
+        } 
+		return {
+			x: max[0] * originX + max[2] * originY + max[4],
+			y: max[1] * originX + max[3] * originY + max[5]
+		}
+	},
     _scaleMatrix: function () {
         var config = this.NB.config;
         var matrix = this.NB.attrs.matrix.split(',');
@@ -415,7 +452,7 @@ NB.prototype._drawLine = function () {
                     */
 
     //testmatrix: '0.866025,0.500000,-0.500000,0.866025,490,348' 旋转30度
-    draw = SVG('canvas').fixSubPixelOffset();
+    draw = SVG('canvas').fixSubPixelOffset()
     group = draw.group();
     ellipse = draw.ellipse(100, 50).attr({
             stroke: 'red',
@@ -429,6 +466,9 @@ NB.prototype._drawLine = function () {
             x: 200,
             y: 200 
     });
+/*img = draw.image('http://gtms03.alicdn.com/tps/i3/T1a3XvFu8EXXX8quM7-240-101.gif').loaded(function(loader) {
+    this.size(loader.width,loader.height)
+})*/
     rect1 = draw.rect(100, 50).attr({
             stroke: 'transparent',
             strokeWidth: '2',
@@ -436,9 +476,7 @@ NB.prototype._drawLine = function () {
             y: 100,
             fill: 'yellow'
     });
-group.add(ellipse).add(rect)
-group.init();
-rect1.init();
+/*img.init();*/
     //ellipse.init();
     var i = 0 ;
     /*var a = setInterval(function () {
@@ -448,6 +486,11 @@ rect1.init();
         ellipse.moveTo(i,100);
         showMax();
     }, 50)*/
+    $(function () {
+        group.add(ellipse).add(rect)
+        group.init();
+        rect1.init();
+    })
     window.showMax = function () {
         var max = group.NB.attrs.matrix.split(',');
         var str = '<div>['+ max[0].slice(0,4) + ' , ' + max[2].slice(0,4) + ' , ' + max[4].slice(0,6) + ']</div>' +
