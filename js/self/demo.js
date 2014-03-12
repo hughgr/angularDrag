@@ -30,10 +30,7 @@ SVG.extend(SVG.Element, {
             size: 5,
             helperPath: null,
             rotatePoint: null,
-            rotateline: null,
-            handles: {
-        
-            }
+            rotateline: null
         }
     },
     drawCorners: function () {
@@ -65,16 +62,25 @@ SVG.extend(SVG.Element, {
         self.NB.rotatePoint = parent.circle(self.NB.size * 2).attr({
             fill: 'red',
             cx: self.NB.attrs.centerX,
-            cy: self.NB.attrs.centerY - self.NB.attrs.height/2 * 1.6 
+            cy: self.NB.attrs.centerY - self.NB.attrs.height/2 * 1.3 
         })
-        var pathStr = 'M' + self.NB.rotatePoint.cx() + ',' + (self.NB.attrs.centerY - self.NB.attrs.height / 2) + 
-                      'L' + self.NB.rotatePoint.cx() + ',' + self.NB.rotatePoint.cy();
+    },
+    drawRotateLine: function () {
+        var self = this;
+        var matrix = self.NB.attrs.matrix;
+        var parent  = this.parent._parent(SVG.Nested) || this._parent(SVG.Doc);
+        var lineCx = (self.NB.corners.positions[1].x + self.NB.corners.positions[0].x) / 2;
+        var lineCy = (self.NB.corners.positions[1].y + self.NB.corners.positions[0].y) / 2;
+        var pos = self._transformPos(matrix, self.NB.rotatePoint.cx(), self.NB.rotatePoint.cy());
+
+        var pathStr = 'M' + lineCx + ',' + lineCy + 
+                      'L' + pos.x + ',' + pos.y;
             self.NB.rotateline = parent.path(pathStr).back().attr({
                 stroke: '#000',
                 'stroke-dasharray': '4,4',
                 fill: 'transparent'
-
          })
+
     },
     
     updateCorners: function () {
@@ -86,24 +92,33 @@ SVG.extend(SVG.Element, {
             /*corners[i].transform('matrix', matrix);*/
             //2D模式
             var pos = this._transformPos(matrix, corners[i].bbox().cx, corners[i].bbox().cy);
+            this.NB.corners.positions[i].x = pos.x
+            this.NB.corners.positions[i].y = pos.y
             corners[i].matrix('1,0,0,1,'+(pos.x - corners[i].bbox().cx)+','+(pos.y-corners[i].bbox().cy)).rotate(config.R)
         }
     },
     updatePath: function () {
-        var matrix = this.NB.attrs.matrix;
+        /*var matrix = this.NB.attrs.matrix;
         var path = this.NB.helperPath;
-        path.transform('matrix',matrix)
+        path.transform('matrix',matrix)*/
+        this.NB.helperPath.remove();
+        this.drawLine();
     },
     updateRotatePoint: function () {
         var matrix = this.NB.attrs.matrix;
-        this.NB.rotateline.matrix(matrix);
+        /*this.NB.rotateline.matrix(matrix);*/
         /*this.NB.rotatePoint.matrix(matrix); */
         var rPoint = this.NB.rotatePoint;
         var pos = this._transformPos(matrix, this.NB.rotatePoint.bbox().cx,this.NB.rotatePoint.bbox().cy);
         rPoint.matrix('1,0,0,1,'+ (pos.x - rPoint.bbox().cx) + ',' + (pos.y - rPoint.bbox().cy))
         //var rLine = this.NB.rotateline;
+
         /*var linePos = this._transformPos(matrix, rLine.bbox().cx, rLine.bbox().cy);
         rLine.matrix('1,0,0,1,'+ (linePos.x - rLine.bbox().cx) + ',' + (linePos.y - rLine.bbox().cy)) */
+    },
+    updateRotateLine: function () {
+        this.NB.rotateline.remove();
+        this.drawRotateLine();
     },
     drawLine: function () {
         var self = this,
@@ -117,9 +132,8 @@ SVG.extend(SVG.Element, {
         self.NB.helperPath = parent.path(pathStr).back().attr({
                 stroke: '#000',
                 'stroke-dasharray': '4,4',
-                fill: 'transparent'
+                fill: 'transparent',
         });
-
     },
     destoryHelper: function () {
         var self = this.NB;
@@ -136,19 +150,6 @@ SVG.extend(SVG.Element, {
         
     },
     doDrag: function () {
-        /*var matrix = this.NB.attrs.matrix;
-        var self = this;
-        this.dragstart = function (move) {
-            console.log(move)
-        };
-        this.dragend = function (move, e) {
-            console.log(move)
-            matrix[5] = self.y() - self.height() + '';
-            matrix[4] = self.x() - self.width() + '';
-            self.updatePath();
-            self.updateCorners();
-        }*/
-
       var self = this;
       self.on('mousedown', start)
       var firstMoveX;
@@ -309,6 +310,7 @@ SVG.extend(SVG.Element, {
         this.updateCorners();
         this.updatePath();
         this.updateRotatePoint();
+        this.updateRotateLine();
         showMax();
     },
     _transfromToMatrix: function () {
@@ -323,14 +325,6 @@ SVG.extend(SVG.Element, {
         var sx = config.sx;
         var sy = config.sy;
         this.NB.attrs.matrix = [
-                 sx * cos,
-                 sy * sin,
-                -sx * sin,
-                 sy * cos,
-                 sx * (-cx * cos + cy * sin + cx) + cx - cx * sx + tx,
-                 sy * (-cx * sin - cy * cos + cy) + cy - cy * sy + ty
-        ].join(',')
-        this.NB.attrs.matrix2 = [
                  sx * cos,
                  sy * sin,
                 -sx * sin,
@@ -362,6 +356,7 @@ SVG.extend(SVG.Element, {
         self.drawCorners();
         self.drawLine();
         self.drawRotatePoint();
+        self.drawRotateLine();
         self.doDrag();
         self.doRotate();
         self.doScale();
@@ -475,7 +470,37 @@ NB.prototype._drawLine = function () {
             x: 600,
             y: 100,
             fill: 'yellow'
-    });
+    }); 
+
+    path1 = draw.path().attr({
+            d: 'M41.216,35.998l-27.236,37.9c0,0,0.57,0.123,12.693-0.822c3.869,12.295,3.765,12.648,3.765,12.648  l27.237-37.9L41.216,35.998z M36.994,46.865l27.236,37.9c0,0-0.104-0.354,3.766-12.648c12.123,0.943,12.691,0.822,12.691,0.822  l-27.236-37.9L36.994,46.865z',
+           fill: '#d81624'
+    })
+    path2 = draw.path().attr({
+            d: 'M73.833,31.092c-0.653-2.456-0.381-5.297-1.625-7.447c-1.263-2.179-3.869-3.356-5.642-5.126    c-1.771-1.769-2.942-4.377-5.127-5.64c-2.146-1.243-4.987-0.97-7.44-1.626c-2.375-0.634-4.69-2.309-7.264-2.309    c-2.571,0-4.891,1.675-7.262,2.309c-2.455,0.656-5.296,0.383-7.444,1.626c-2.181,1.262-3.357,3.87-5.126,5.64    c-1.771,1.769-4.379,2.947-5.641,5.126c-1.243,2.149-0.97,4.99-1.625,7.444c-0.636,2.373-2.312,4.69-2.312,7.262    c0,2.571,1.676,4.89,2.312,7.26c0.653,2.455,0.382,5.297,1.625,7.445c1.262,2.182,3.87,3.355,5.639,5.127    c1.771,1.771,2.947,4.379,5.127,5.639c2.149,1.244,4.99,0.975,7.445,1.629c2.372,0.635,4.688,2.311,7.262,2.311    c2.572,0,4.891-1.676,7.264-2.311c2.453-0.656,5.295-0.385,7.44-1.625c2.183-1.264,3.356-3.869,5.127-5.643    c1.771-1.77,4.377-2.945,5.642-5.127c1.244-2.146,0.972-4.99,1.625-7.443c0.635-2.373,2.312-4.69,2.312-7.262    C76.145,35.779,74.468,33.461,73.833,31.092z',
+            fill: '#ed1c24'
+    })
+    path3 = draw.path().attr({
+            d: 'M0.6875 9.125q1.5-2.625 2.375-6.0625 1.5625 0.1875 2.1875 0.4375 0.0625 0.0625-0.25 0.6875-0.25 0.5-0.4375 0.9375h2.1875v1.625h-2.875q-0.0625 0.125-0.1875 0.4375-0.1875 0.5-0.375 0.75h3.25v1.625h-1.6875v1.25h2.125v1.625h-2.1875v1.9375q0.4375-0.25 1.25-0.75 0.4375-0.3125 0.6875-0.4375 0.1875 1.3125 0.3125 1.8125-1.9375 1.0625-3.1875 2.0625-0.3125 0.25-0.375 0.25-0.25-0.125-1.125-1.75 0-0.0625 0.125-0.1875 0.4375-0.5625 0.4375-1.125v-1.8125h-2v-1.625h2v-1.3125h-0.4375q-0.1875 0.375-0.4375 0.75-0.4375-0.4375-1.0625-0.9375-0.1875-0.125-0.3125-0.1875zM7 4.5625q0.75-0.25 1.8125-0.75 0.8125 1.4375 1.1875 2.5625-0.625 0.25-1.75 0.6875-0.4375-1.0625-1.25-2.5zM7.5625 17.5625v-9.9375h2.625v-4.4375h0.375q1.8125-0.0625 1.75 0.25 0 0.0625-0.0625 0.375-0.125 0.5625-0.125 1v2.8125h2.5625v8.5q0.5625 1.625-3 1.5625-0.1875-0.8125-0.625-1.9375 1.8125 0.1875 1.5-0.625v-0.75h-3.125v3.1875h-1.875zM12.5625 10.3125v-1.125h-3.125v1.125h3.125zM12.5625 11.6875h-3.125v1.1875h3.125v-1.1875zM12.3125 6.5625q0.8125-1.3125 1.375-2.6875 0.75 0.3125 1.8125 0.75 0 0.0625-0.1875 0.3125-0.1875 0.1875-0.3125 0.375-0.875 1.5-1.125 2-0.875-0.375-1.5625-0.75z M19.125 7.5625v-4.125h10.125v4.125h-10.125zM27.1875 4.6875h-6.125v0.4375h6.125v-0.4375zM27.25 6.5625v-0.4375h-6.1875v0.4375h6.1875zM16.8125 9.25v-1.25h14.5v1.25h-14.5zM19.0625 9.6875h10.1875v4.1875h-4.125v0.5625h4.625v1.125h-4.625v0.4375h5.8125v1.1875h-13.625v-1.1875h5.8125v-0.4375h-4.5625v-1.125h4.5625v-0.5625h-4.0625v-4.1875zM23.125 11.3125v-0.5625h-2.1875v0.5625h2.1875zM27.3125 10.75h-2.1875v0.5625h2.1875v-0.5625zM27.3125 12.8125v-0.5h-2.1875v0.5h2.1875zM20.9375 12.3125v0.5h2.1875v-0.5h-2.1875z',
+            fill:'#FFFFFF'
+        }).transform({
+            x: 29.1963,
+            y: 17.021,
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1
+        })
+    path4 = draw.path().attr({
+            d: 'M0.5 7.8125q1.9375-2.3125 2.5625-4.875 2.125 0.375 2.25 0.4375 0.0625 0.0625-0.125 0.375-0.1875 0.25-0.25 0.375 2.5 1.6875 2.6875 1.9375-0.375 0.375-1 1.125l-0.3125 0.375q-0.5-0.75-2.1875-2-1.4375 2.375-2.6875 3.9375-0.25-0.875-0.9375-1.6875zM7 5.4375v-1.625h8.125v1.625h-3.1875q-0.0625 0.25-0.1875 0.8125l-0.1875 0.5625h3.0625v7.25h-1.9375v-5.6875h-3.3125v5.6875h-2v-7.3125h2.3125l0.3125-1.3125h-3zM10.0625 9.375v-0.1875q-0.125-0.5 0.375-0.375h0.625q0.9375-0.0625 1 0.125 0.125 0.125 0.0625 0.5625-0.125 0.625-0.125 1.25 0 1.5625-0.3125 2.9375 1.9375 1.0625 3.625 2.3125-0.75 0.75-1.375 1.5625-0.75-0.75-2.875-2.3125-1.375 1.625-3.625 2.5625-0.6875-0.875-1.3125-1.5 2.75-1 3.3125-2.1875 0.75-1.0625 0.625-4.75zM4.875 17.125q-1.625-1.9375-3.5625-3.3125l1.125-1.25q0.125 0 1 0.625 0.25 0.1875 0.375 0.3125 0.75-1.6875 0.6875-2.0625h-3.125v-1.5625h5.4375q-0.375 1.8125-1.625 4.6875 0.875 0.75 1.25 1.25zM4.9375 7.0625q0.4375 1.3125 0.625 2.1875l-1.875 0.5q-0.3125-1.5-0.625-2.1875z M22.125 3.875q0.0625 0.0625-0.375 0.6875-0.375 0.5625-0.5625 0.9375h1.9375v-2.5625h0.625q1.75 0 1.6875 0.125 0.0625 0.125-0.0625 0.5-0.125 0.4375-0.125 0.6875v1.25h4.125v1.6875h-4.125v2.0625h5.8125v1.6875h-4.75v3.875q0 0.625 0.625 0.625h1.1875q1.25 0.25 1.1875-2 1.125 0.5625 2.1875 0.8125 0.0625 3.1875-2.3125 2.9375h-3.125q-1.8125 0-1.8125-1.5625v-4.6875h-1q0.0625 5-4.6875 6.75l-1.3125-1.5625q3.9375-1.25 3.9375-5.1875h-4.0625v-1.6875h6v-2.0625h-2.75q-0.3125 0.6875-0.875 1.4375-0.9375-0.4375-1.8125-0.6875 1.6875-2.375 2.1875-4.5625 0.0625 0 0.3125 0.0625 1.9375 0.3125 1.9375 0.4375z',
+            fill: '#FFFFFF',
+    }).transform({
+            x: 29.1963,
+            y: 36.8433,
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1
+        })
+
 /*img.init();*/
     //ellipse.init();
     var i = 0 ;
@@ -487,7 +512,8 @@ NB.prototype._drawLine = function () {
         showMax();
     }, 50)*/
     $(function () {
-        group.add(ellipse).add(rect)
+        /*group.add(ellipse).add(rect)*/
+        group.add(path1).add(path2).add(path3).add(path4);
         group.init();
         rect1.init();
     })
